@@ -1,11 +1,12 @@
 import { Button, View } from "react-native";
 import React, { useEffect, useState } from "react";
+import uuid from "react-native-uuid";
 
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { RootStackParamList } from "../types/navigation";
 import { useQueryClient } from "@tanstack/react-query";
 import AddToDoForm from "../components/AddToDoForm";
-import { useAddTodo } from "../api";
+import { useAddTodoWithId } from "../api";
 
 type AddToDoScreenProps = NativeStackScreenProps<RootStackParamList, "AddToDo">;
 
@@ -14,7 +15,7 @@ const AddToDoScreen = ({ navigation }: AddToDoScreenProps) => {
   const [description, setDescription] = useState<string>("");
 
   const queryClient = useQueryClient();
-  const { mutate } = useAddTodo(queryClient);
+  const { mutate } = useAddTodoWithId(queryClient);
 
   useEffect(() => {
     navigation.setOptions({
@@ -23,7 +24,7 @@ const AddToDoScreen = ({ navigation }: AddToDoScreenProps) => {
         <Button
           title="Done"
           onPress={() => {
-            mutate({ name, description });
+            mutate({ id: uuid.v4().toString(), name, description });
             navigation.navigate("ToDoList");
           }}
         />

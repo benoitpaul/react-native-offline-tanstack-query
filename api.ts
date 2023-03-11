@@ -1,7 +1,12 @@
 import { QueryClient, useMutation, useQuery } from "@tanstack/react-query";
 import { GraphQLClient, gql } from "graphql-request";
 import { REACT_APP_API_URL, REACT_APP_API_KEY } from "@env";
-import { AddToDoInput, PagedToDos, ToDo } from "./types/ToDo";
+import {
+  AddToDoInput,
+  AddTodoWithIdInput,
+  PagedToDos,
+  ToDo,
+} from "./types/ToDo";
 import uuid from "react-native-uuid";
 
 console.log({
@@ -137,6 +142,62 @@ export const useAddTodo = (queryClient: QueryClient) => {
             [],
         };
       });
+      return { previousToDos };
+    },
+    onError: (err, newTodo, context) => {
+      queryClient.setQueryData(["todos"], context?.previousToDos);
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: ["todos"] });
+    },
+  });
+};
+
+type TAddTodoWithIdMutation = {
+  addTodoWithId: ToDo;
+};
+
+export const useAddTodoWithId = (queryClient: QueryClient) => {
+  return useMutation({
+    mutationFn: async ({ id, name, description }: AddTodoWithIdInput) => {
+      const { addTodoWithId } =
+        await graphQLClient.request<TAddTodoWithIdMutation>(
+          gql`
+            mutation AddToDo($id: ID!, $name: String!, $description: String!) {
+              addTodoWithId(
+                id: $id
+                newToDo: { name: $name, description: $description }
+              ) {
+                completed
+                description
+                id
+                name
+              }
+            }
+          `,
+          { id, name, description }
+        );
+      return addTodoWithId;
+    },
+    onMutate: async (addedToDo) => {
+      await queryClient.cancelQueries({ queryKey: ["todos"] });
+
+      const previousToDos = queryClient.getQueryData<PagedToDos>(["todos"]);
+
+      queryClient.setQueryData<PagedToDos>(["todos"], (old) => {
+        return {
+          items:
+            (old && [
+              ...old!.items,
+              {
+                ...addedToDo,
+                completed: false,
+              },
+            ]) ||
+            [],
+        };
+      });
+
       return { previousToDos };
     },
     onError: (err, newTodo, context) => {

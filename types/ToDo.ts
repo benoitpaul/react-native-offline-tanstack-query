@@ -14,3 +14,9 @@ export type AddToDoInput = {
   name: string;
   description: string;
 };
+
+export type AddTodoWithIdInput = {
+  id: string;
+  name: string;
+  description: string;
+};

@@ -8,6 +8,7 @@ import { RootStackParamList } from "../types/navigation";
 import { PagedToDos } from "../types/ToDo";
 import { onlineManager, useQueryClient } from "@tanstack/react-query";
 import { useCompleteTodo, useTodosQuery } from "../api";
+import OfflineSimulator from "../components/OfflineSimulator";
 
 type ToDoListScreenProps = NativeStackScreenProps<
   RootStackParamList,
@@ -62,25 +63,7 @@ const ToDoListScreen = ({ navigation }: ToDoListScreenProps) => {
 
   return (
     <View style={styles.container}>
-      {/* <View>
-        <Button
-          title="Online"
-          onPress={() => {
-            onlineManager.setOnline(true);
-            setIsOnline(onlineManager.isOnline());
-          }}
-        />
-        <Button
-          title="Offline"
-          onPress={() => {
-            onlineManager.setOnline(false);
-            setIsOnline(onlineManager.isOnline());
-          }}
-        />
-        <Text>{isOnline ? "IS_ONLINE" : "IS_OFFLINE"}</Text>
-        <Text>status: {status}</Text>
-        <Text>fetchStatus: {fetchStatus}</Text>
-      </View> */}
+      <OfflineSimulator />
       <View style={styles.list}>
         {isError && <Text>Error</Text>}
         {isLoading && <Text>Loading..</Text>}
