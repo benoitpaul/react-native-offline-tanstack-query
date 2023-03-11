@@ -51,23 +51,8 @@ type TCompleteTodoMutation = {
 
 export const useCompleteTodo = (queryClient: QueryClient) => {
   return useMutation({
-    mutationFn: async (toDoId: string) => {
-      const { completeTodo } =
-        await graphQLClient.request<TCompleteTodoMutation>(
-          gql`
-            mutation CompleteTodo($toDoId: String!) {
-              completeTodo(id: $toDoId) {
-                completed
-                description
-                id
-                name
-              }
-            }
-          `,
-          { toDoId }
-        );
-      return completeTodo;
-    },
+    mutationKey: ["completeTodo"],
+    mutationFn: completeTodoMutationFn,
     onMutate: async (toDoId) => {
       await queryClient.cancelQueries({ queryKey: ["todos"] });
 
@@ -98,6 +83,23 @@ export const useCompleteTodo = (queryClient: QueryClient) => {
       queryClient.invalidateQueries({ queryKey: ["todos"] });
     },
   });
+};
+
+export const completeTodoMutationFn = async (toDoId: string) => {
+  const { completeTodo } = await graphQLClient.request<TCompleteTodoMutation>(
+    gql`
+      mutation CompleteTodo($toDoId: String!) {
+        completeTodo(id: $toDoId) {
+          completed
+          description
+          id
+          name
+        }
+      }
+    `,
+    { toDoId }
+  );
+  return completeTodo;
 };
 
 type TAddTodoMutation = {
@@ -159,26 +161,8 @@ type TAddTodoWithIdMutation = {
 
 export const useAddTodoWithId = (queryClient: QueryClient) => {
   return useMutation({
-    mutationFn: async ({ id, name, description }: AddTodoWithIdInput) => {
-      const { addTodoWithId } =
-        await graphQLClient.request<TAddTodoWithIdMutation>(
-          gql`
-            mutation AddToDo($id: ID!, $name: String!, $description: String!) {
-              addTodoWithId(
-                id: $id
-                newToDo: { name: $name, description: $description }
-              ) {
-                completed
-                description
-                id
-                name
-              }
-            }
-          `,
-          { id, name, description }
-        );
-      return addTodoWithId;
-    },
+    mutationKey: ["addTodoWithId"],
+    mutationFn: addTodoWithIdMutationFn,
     onMutate: async (addedToDo) => {
       await queryClient.cancelQueries({ queryKey: ["todos"] });
 
@@ -207,4 +191,28 @@ export const useAddTodoWithId = (queryClient: QueryClient) => {
       queryClient.invalidateQueries({ queryKey: ["todos"] });
     },
   });
+};
+
+export const addTodoWithIdMutationFn = async ({
+  id,
+  name,
+  description,
+}: AddTodoWithIdInput) => {
+  const { addTodoWithId } = await graphQLClient.request<TAddTodoWithIdMutation>(
+    gql`
+      mutation AddToDo($id: ID!, $name: String!, $description: String!) {
+        addTodoWithId(
+          id: $id
+          newToDo: { name: $name, description: $description }
+        ) {
+          completed
+          description
+          id
+          name
+        }
+      }
+    `,
+    { id, name, description }
+  );
+  return addTodoWithId;
 };
